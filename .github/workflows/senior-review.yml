@@ -46,12 +46,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
       - name: Install Claude Code
-        run: npm install -g @anthropic-ai/claude-code
+        # The official installer: the npm package lags behind and its older CLI
+        # doesn't accept current CLAUDE_CODE_OAUTH_TOKEN tokens.
+        run: |
+          curl -fsSL https://claude.ai/install.sh | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Run stage tests
         id: tests
