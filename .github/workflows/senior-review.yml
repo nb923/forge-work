@@ -75,6 +75,15 @@ jobs:
             echo "::warning::CLAUDE_CODE_OAUTH_TOKEN contains spaces or other stray characters (a copy-paste problem)"
           fi
 
+      - name: Debug claude auth (temporary)
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          which claude; claude --version
+          python -c "import os;print('python sees token:', bool(os.environ.get('CLAUDE_CODE_OAUTH_TOKEN')))"
+          claude -p "say ok" --output-format json --no-session-persistence | python -c "import json,sys;e=json.load(sys.stdin);print(e.get('is_error'),e.get('result'))" || true
+          env | grep -oE '^(CLAUDE|ANTHROPIC)[A-Z_]*' || true
+
       - name: Senior review
         env:
           GITHUB_TOKEN: ${{ github.token }}
