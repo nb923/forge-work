@@ -1,0 +1,2 @@
+# Keep LF everywhere: expected outputs and RESP transcripts are byte-exact.
+* text=auto eol=lf
