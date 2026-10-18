@@ -6,7 +6,8 @@
     "model": null
   },
   "anki": {
-    "auto_sync": false,
-    "url": "http://127.0.0.1:8765"
+    "auto_sync": true,
+    "url": "http://127.0.0.1:8765",
+    "preload": true
   }
 }

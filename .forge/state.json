@@ -1,6 +1,8 @@
 {
-  "current": null,
+  "current": "s00",
   "completed": [],
   "unlocked": [],
-  "started": []
+  "started": [
+    "s00"
+  ]
 }
