@@ -69,26 +69,22 @@ jobs:
         env:
           T: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
+          T="$(printf %s "$T" | tr -d '[:space:]')"
           echo "token length: ${#T}"
           case "$T" in sk-ant-*) ;; *) echo "::warning::CLAUDE_CODE_OAUTH_TOKEN doesn't start with sk-ant- (re-run claude setup-token)";; esac
           if printf %s "$T" | grep -q '[^A-Za-z0-9_-]'; then
-            echo "::warning::CLAUDE_CODE_OAUTH_TOKEN contains spaces or other stray characters (a copy-paste problem)"
+            echo "::warning::CLAUDE_CODE_OAUTH_TOKEN contains stray characters (a copy-paste problem); re-run claude setup-token"
           fi
-
-      - name: Debug claude auth (temporary)
-        env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-        run: |
-          which claude; claude --version
-          python -c "import os;print('python sees token:', bool(os.environ.get('CLAUDE_CODE_OAUTH_TOKEN')))"
-          claude -p "say ok" --output-format json --no-session-persistence | python -c "import json,sys;e=json.load(sys.stdin);print(e.get('is_error'),e.get('result'))" || true
-          env | grep -oE '^(CLAUDE|ANTHROPIC)[A-Z_]*' || true
 
       - name: Senior review
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
+          # A token copied from a wrapped terminal line can pick up spaces/newlines.
+          CLAUDE_CODE_OAUTH_TOKEN="$(printf %s "$CLAUDE_CODE_OAUTH_TOKEN" | tr -d '[:space:]')"
+          echo "::add-mask::$CLAUDE_CODE_OAUTH_TOKEN"
+          export CLAUDE_CODE_OAUTH_TOKEN
           cd .cpp-forge
           python -m forge.github_bot \
             --repo "${{ github.repository }}" \
