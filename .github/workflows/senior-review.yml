@@ -1,0 +1,96 @@
+# Copy to .github/workflows/senior-review.yml in your forge workspace repo.
+#
+# The review is posted by the built-in github-actions bot (no second account).
+# One-time setup in the workspace repo:
+#   Settings → Actions → General → Workflow permissions:
+#     tick "Allow GitHub Actions to create and approve pull requests".
+#   Settings → Secrets and variables → Actions:
+#     secret   CLAUDE_CODE_OAUTH_TOKEN  output of `claude setup-token` (your Claude plan)
+#     secret   FORGE_COURSE_TOKEN       fine-grained PAT, only the cpp-forge repo,
+#                                       "Contents: read-only" (the course repo is private)
+#     variable FORGE_COURSE_REPO        e.g. nb923/cpp-forge
+#   Branch protection / ruleset for `main`: require the status check
+#   "forge/senior-review" (and optionally 1 approving review). Nothing merges
+#   until the senior reviewer approves. Private repos need GitHub Pro for this.
+name: senior-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write   # post the review (APPROVE / REQUEST_CHANGES)
+  statuses: write        # set forge/senior-review
+
+concurrency:
+  group: senior-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ vars.FORGE_COURSE_REPO }}
+          token: ${{ secrets.FORGE_COURSE_TOKEN }}
+          path: .cpp-forge
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Claude Code
+        # The official installer: the npm package lags behind and its older CLI
+        # doesn't accept current CLAUDE_CODE_OAUTH_TOKEN tokens.
+        run: |
+          set -euo pipefail
+          curl -fsSL https://claude.ai/install.sh -o install-claude.sh
+          bash install-claude.sh && rm install-claude.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Run stage tests
+        id: tests
+        continue-on-error: true
+        env:
+          FORGE_COURSE_ROOT: .cpp-forge   # the course checkout, not the path recorded at `forge init`
+        run: |
+          set +e
+          python .cpp-forge/forge.py --workspace . test --ci > forge-tests.txt 2>&1
+          status=$?
+          cat forge-tests.txt
+          exit $status
+
+      - name: Check the Claude token's shape (never prints it)
+        env:
+          T: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          T="$(printf %s "$T" | tr -d '[:space:]')"
+          echo "token length: ${#T}"
+          case "$T" in sk-ant-*) ;; *) echo "::warning::CLAUDE_CODE_OAUTH_TOKEN doesn't start with sk-ant- (re-run claude setup-token)";; esac
+          if printf %s "$T" | grep -q '[^A-Za-z0-9_-]'; then
+            echo "::warning::CLAUDE_CODE_OAUTH_TOKEN contains stray characters (a copy-paste problem); re-run claude setup-token"
+          fi
+
+      - name: Senior review
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          # A token copied from a wrapped terminal line can pick up spaces/newlines.
+          CLAUDE_CODE_OAUTH_TOKEN="$(printf %s "$CLAUDE_CODE_OAUTH_TOKEN" | tr -d '[:space:]')"
+          echo "::add-mask::$CLAUDE_CODE_OAUTH_TOKEN"
+          export CLAUDE_CODE_OAUTH_TOKEN
+          cd .cpp-forge
+          python -m forge.github_bot \
+            --repo "${{ github.repository }}" \
+            --pr "${{ github.event.pull_request.number }}" \
+            --backend claude-cli \
+            --workdir "$GITHUB_WORKSPACE" \
+            --test-summary "$GITHUB_WORKSPACE/forge-tests.txt"
