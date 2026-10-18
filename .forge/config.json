@@ -1,0 +1,12 @@
+{
+  "course_root": "E:\\stuff\\cpp-forge",
+  "review": {
+    "backend": "claude-cli",
+    "required": true,
+    "model": null
+  },
+  "anki": {
+    "auto_sync": false,
+    "url": "http://127.0.0.1:8765"
+  }
+}

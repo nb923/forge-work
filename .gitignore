@@ -1,0 +1,6 @@
+build/
+*.exe
+*.o
+*.gcda
+*.gcno
+*.gcov
