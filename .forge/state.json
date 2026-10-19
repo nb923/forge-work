@@ -4,5 +4,9 @@
   "unlocked": [],
   "started": [
     "s00"
-  ]
+  ],
+  "pending_pr": {
+    "stage": "s00",
+    "number": 2
+  }
 }

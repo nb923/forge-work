@@ -8,3 +8,5 @@ build/
 # Local Claude Code setup (design tutor, card maker): kept on disk, not published
 CLAUDE.md
 .claude/
+*.ii
+*.s
