@@ -2,7 +2,7 @@
 
 Fill in each line (the tester checks this file):
 
-Compiler: <output of `g++ --version`, first line>
-Standard: <which -std flag the course uses>
-Debug flags: <the flags that make a debug build>
-Why -Werror: <one sentence in your own words>
+Compiler: g++.exe (Rev10, Built by MSYS2 project) 12.2.0
+Standard: c++20
+Debug flags: -g -O0 -D_GLIBCXX_ASSERTIONS
+Why -Werror: To make sure warnings that count as errors get caught
