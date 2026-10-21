@@ -1,10 +1,5 @@
-// Delve: a terminal roguelike you build one stage at a time.
-//
-// The tester runs your program as:   delve <command> [arguments...]
-// Each stage adds a command. Add an `if (command == "...")` branch per command.
-// (argc/argv, the "command line arguments", are explained properly in LearnCPP
-// 20.4; until then, treat this dispatch as given.)
 #include <iostream>
+#include <string>
 #include <string_view>
 
 int main(int argc, char* argv[])
@@ -17,7 +12,25 @@ int main(int argc, char* argv[])
 
     const std::string_view command{ argv[1] };
 
-    // Stage d01: handle `command == "greet"` here.
+    if (command == "greet") 
+    {
+        std::string name{};
+        int age{};
+
+        std::cout << "Welcome to Delve!\n";
+        
+        std::cout << "What is your name, adventurer?\n";
+        std::cin >> name; // allows name and age to appear on the same line because of input buffering
+
+        std::cout << "How many winters have you seen?\n";
+        std::cin >> age;
+
+        std::cout << "Well met, " << name << "!\n";
+        std::cout << "In ten winters you will be " << age + 10 << ".\n";
+        std::cout << "That is " << age * 12 << " moons so far.\n";
+    
+        return 0;
+    }
 
     std::cerr << "Unknown command: " << command << '\n';
     return 1;
