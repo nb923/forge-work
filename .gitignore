@@ -10,3 +10,7 @@ CLAUDE.md
 .claude/
 *.ii
 *.s
+
+# Course state, saved reviews, design logs and the Anki deck: kept on disk, never published
+.forge/
+anki/
