@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
         std::cout << "Welcome to Delve!\n";
         
         std::cout << "What is your name, adventurer?\n";
-        std::cin >> name; // checks for non number input while reading to throw error
+        std::cin >> name; // allows name and age to appear on the same line because of input buffering
 
         std::cout << "How many winters have you seen?\n";
         std::cin >> age;
